@@ -368,9 +368,4 @@ def test(s: str):
 
 
 if __name__ == "__main__":
-    # with open(R"C:\Users\DigiDuncan\Documents\GitHub\TobyScript\tobyscript\data\true_lab.txt", "r") as f:
-    #     lines = f.readlines()
-    #     for line in lines:
-    #         if line.strip() != "":
-    #             test(line)
     test(R"\W* Howdy^2!&* I'm\Y FLOWEY\W.^2 &* \YFLOWEY\W the \YFLOWER\W!/")
