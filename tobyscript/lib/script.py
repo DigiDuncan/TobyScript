@@ -16,11 +16,11 @@ def flatten(x):
 
 class Settings(TypedDict):
     """
-    * `char_name`: replaces `\[C]`
-    * `g`: replaces `\[G]`
-    * `item`: replaces `\[I]`
-    * `one`: replaces `\[1]`
-    * `two`: replaces `\[2]`
+    * `char_name`: replaces `\\[C]`
+    * `g`: replaces `\\[G]`
+    * `item`: replaces `\\[I]`
+    * `one`: replaces `\\[1]`
+    * `two`: replaces `\\[2]`
     """
     char_name: str
     g: str
@@ -134,7 +134,7 @@ class EmotionEvent(Event):
 
 class FaceEvent(Event):
     def __init__(self, data: int):
-        """Denotes a face for the character on screen (if any) to display."""
+        """Denotes a character's face to display on screen."""
         super().__init__(data)
         self.data = cast(int, self.data)
 
@@ -187,7 +187,7 @@ class SoundEvent(Event):
 class TextSizeEvent(Event):
     def __init__(self, data: str):
         """Change the upcoming text size.
-        
+
         `self.small`: `bool` - whether or not we're changing the text size to small (or normal, if False.)"""
         super().__init__(data)
         self.data = cast(str, self.data)
