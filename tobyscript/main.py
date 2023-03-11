@@ -18,8 +18,9 @@ SCREEN_TITLE = "tobyscript"
 pyglet.options["advanced_font_features"] = True
 arcade.pyglet.options["advanced_font_features"] = True
 
-with pkg_resources.path(tobyscript.data.fonts, "DTM-SANS.otf") as p:
-    arcade.text.load_font(str(p))
+for font in ["DTM-SANS.otf", "FNT-SANS.ttf", "FNT-PAPYRUS.ttf", "PIXELATED-WINGDINGS.ttf"]:
+    with pkg_resources.path(tobyscript.data.fonts, font) as p:
+        arcade.text.load_font(str(p))
 
 # Set up logging
 logger: logging.Logger = None

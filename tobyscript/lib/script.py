@@ -52,11 +52,19 @@ class Event:
     def __repr__(self) -> str:
         return self.__str__()
 
+    @property
+    def tobyscript(self) -> str:
+        raise NotImplementedError
+
 class TextEvent(Event):
     def __init__(self, data: str):
         """Represents text to display on the screen."""
         super().__init__(data)
         self.data = cast(str, self.data)
+
+    @property
+    def tobyscript(self) -> str:
+        return self.data
 
 class PauseEvent(Event):
     def __init__(self, data: int):
@@ -64,7 +72,31 @@ class PauseEvent(Event):
         super().__init__(data)
         self.data = cast(int, self.data)
 
+    @property
+    def tobyscript(self) -> str:
+        return f"^{self.data}"
+
 class ColorEvent(Event):
+    NAME_MAP = {"R": "red",
+             "G": "green",
+             "W": "white",
+             "Y": "yellow",
+             "B": "blue",
+             "O": "orange",
+             "L": "azure",
+             "P": "magenta",
+             "p": "pink"}
+
+    COLOR_MAP = {"R": (0xFF, 0x00, 0x00, 0xFF),
+             "G": (0x00, 0xFF, 0x00, 0xFF),
+             "W": (0xFF, 0xFF, 0xFF, 0xFF),
+             "Y": (0xFF, 0xFF, 0x00, 0xFF),
+             "B": (0x00, 0x00, 0xFF, 0xFF),
+             "O": (0xFF, 0xA0, 0x40, 0xFF),
+             "L": (0x0E, 0xC0, 0xFD, 0xFF),
+             "P": (0xFF, 0x00, 0xFF, 0xFF),
+             "p": (0xFF, 0xBB, 0xD4, 0xFF)}
+
     def __init__(self, data: str):
         """Changes the color of upcoming text.
 
@@ -77,62 +109,49 @@ class ColorEvent(Event):
 
     @property
     def name(self) -> str:
-        match self.data:
-            case "R":
-                return "red"
-            case "G":
-                return "green"
-            case "W":
-                return "white"
-            case "Y":
-                return "yellow"
-            case "X":
-                return "white" if settings["fix_black"] else "black"
-            case "B":
-                return "blue"
-            case "O":
-                return "orange"
-            case "L":
-                return "azure"
-            case "P":
-                return "magenta"
-            case "p":
-                return "pink"
+        if self.data == "X":
+            return "white" if settings["fix_black"] else "black"
+        else:
+            return self.NAME_MAP.get(self.data)
 
     @property
     def rgba(self) -> RGBA:
-        match self.data:
-            case "R":
-                return (0xFF, 0x00, 0x00, 0xFF)
-            case "G":
-                return (0x00, 0xFF, 0x00, 0xFF)
-            case "W":
-                return (0xFF, 0xFF, 0xFF, 0xFF)
-            case "Y":
-                return (0xFF, 0xFF, 0x00, 0xFF)
-            case "X":
-                return (0xFF, 0xFF, 0xFF, 0xFF) if settings["fix_black"] else (0x00, 0x00, 0x00, 0xFF)
-            case "B":
-                return (0x00, 0x00, 0xFF, 0xFF)
-            case "O":
-                return (0xFF, 0xA0, 0x40, 0xFF)
-            case "L":
-                return (0x0E, 0xC0, 0xFD, 0xFF)
-            case "P":
-                return (0xFF, 0x00, 0xFF, 0xFF)
-            case "p":
-                return (0xFF, 0xBB, 0xD4, 0xFF)
+        if self.data == "X":
+            return (0xFF, 0xFF, 0xFF, 0xFF) if settings["fix_black"] else (0x00, 0x00, 0x00, 0xFF)
+        else:
+            return self.COLOR_MAP.get(self.data)
 
     @property
     def rgb(self) -> RGB:
         return self.rgba[:2]
+
+    @property
+    def tobyscript(self) -> str:
+        return f"\\{self.data}"
 
 class EmotionEvent(Event):
     def __init__(self, data: int):
         """Denotes an emotion for the character on screen (if any) to display."""
         super().__init__(data)
 
+    @property
+    def tobyscript(self) -> str:
+        return f"\\E{self.data}"
+
 class FaceEvent(Event):
+    FACE_MAP = {
+        0: None,
+        1: "Toriel",
+        2: "Flowey",
+        3: "Sans",
+        4: "Papyrus",
+        5: "Undyne",
+        6: "Alphys",
+        7: "Asgore",
+        8: "Mettaton",
+        9: "Asriel"
+    }
+
     def __init__(self, data: int):
         """Denotes a character's face to display on screen."""
         super().__init__(data)
@@ -140,27 +159,21 @@ class FaceEvent(Event):
 
     @property
     def character(self) -> str | None:
-        match self.data:
-            case 0:
-                return None
-            case 1:
-                return "Toriel"
-            case 2:
-                return "Flowey"
-            case 3:
-                return "Sans"
-            case 4:
-                return "Papyrus"
-            case 5:
-                return "Undyne"
-            case 6:
-                return "Alphys"
-            case 7:
-                return "Asgore"
-            case 8:
-                return "Mettaton"
-            case 9:
-                return "Asriel"
+        return self.FACE_MAP.get(self.data)
+
+    @property
+    def tobyscript(self) -> str:
+        return f"\\F{self.data}"
+
+class AnimationEvent(Event):
+    def __init__(self, data: int):
+        """Denotes an animation. Hard to know what this means in context of the game."""
+        super().__init__(data)
+        self.data = cast(int, self.data)
+
+    @property
+    def tobyscript(self) -> str:
+        return f"\\M{self.data}"
 
 class SoundEvent(Event):
     def __init__(self, data: str):
@@ -184,6 +197,10 @@ class SoundEvent(Event):
             case "p":
                 return "phone"
 
+    @property
+    def tobyscript(self) -> str:
+        return f"\\{self.data}"
+
 class TextSizeEvent(Event):
     def __init__(self, data: str):
         """Change the upcoming text size.
@@ -196,7 +213,24 @@ class TextSizeEvent(Event):
     def small(self) -> bool:
         return True if self.data == "-" else False
 
+    @property
+    def tobyscript(self) -> str:
+        return f"\\T{self.data}"
+
 class SpeakerEvent(Event):
+    SPEAKER_MAP = {"T": "Toriel",
+        "t": "Toriel (Sans)",
+        "0": "Default",
+        "S": "Default (no sound)",
+        "F": "Flowey (evil)",
+        "s": "Sans",
+        "P": "Papryus",
+        "M": "Mettaton",
+        "U": "Undyne",
+        "A": "Alphys",
+        "a": "Asgore",
+        "R": "Asriel"}
+
     def __init__(self, data: str):
         """Change the current speaker. Used to change text beep sound, typically.
 
@@ -207,31 +241,11 @@ class SpeakerEvent(Event):
 
     @property
     def speaker(self) -> str:
-        match self.data:
-            case "T":
-                return "Toriel"
-            case "t":
-                return "Toriel (Sans)"
-            case "0":
-                return "Default"
-            case "S":
-                return "Default (no sound)"
-            case "F":
-                return "Flowey (evil)"
-            case "s":
-                return "Sans"
-            case "P":
-                return "Papryus"
-            case "M":
-                return "Mettaton"
-            case "U":
-                return "Undyne"
-            case "A":
-                return "Alphys"
-            case "a":
-                return "Asgore"
-            case "R":
-                return "Asriel"
+        return self.SPEAKER_MAP.get(self.data)
+
+    @property
+    def tobyscript(self) -> str:
+        return f"\\S{self.data}"
 
 class WaitEvent(Event):
     def __init__(self):
@@ -239,11 +253,19 @@ class WaitEvent(Event):
         super().__init__()
         self.data = cast(NoneType, self.data)
 
+    @property
+    def tobyscript(self) -> str:
+        return "/"
+
 class SkipEvent(Event):
     def __init__(self):
         """Continue to the next text box (or rather, clear the current box contents.)"""
         super().__init__()
         self.data = cast(NoneType, self.data)
+
+    @property
+    def tobyscript(self) -> str:
+        return "%"
 
 class CloseEvent(Event):
     def __init__(self):
@@ -251,18 +273,36 @@ class CloseEvent(Event):
         super().__init__()
         self.data = cast(NoneType, self.data)
 
+    @property
+    def tobyscript(self) -> str:
+        return "%%"
+
 def parse(s: str) -> list[Event]:
     """Take a TobyScript string and return an ordered list of Events."""
     events: list[Event] = []
     current_string = ""
 
-    s = s.replace("\\>1", " ").replace("\\z4", "∞").replace("&", "\n").replace("\\C", "")\
-        .replace("\\*Z", "[Z]").replace("\\*X", "[X]").replace("\\*C", "[C]").replace("\\*A", "[A]")\
-        .replace("\\*D", "[D]").replace("\\[C]", settings["char_name"]) \
-                               .replace("\\[I]", settings["item"]) \
-                               .replace("\\[G]", settings["g"]) \
-                               .replace("\\[1]", settings["one"]) \
-                               .replace("\\[2]", settings["two"]).rstrip()
+    replacements = [
+        ("\\>1", " "),
+        ("\\z4", "∞"),
+        ("&", "\n"),
+        ("\\C", ""),
+        ("\\*Z", "[Z]"),
+        ("\\*X", "[X]"),
+        ("\\*C", "[C]"),
+        ("\\*A", "[A]"),
+        ("\\*D", "[D]"),
+        ("\\[C]", settings["char_name"]),
+        ("\\[I]", settings["item"]),
+        ("\\[G]", settings["g"]),
+        ("\\[1]", settings["one"]),
+        ("\\[2]", settings["two"])
+    ]
+
+    for old, new in replacements:
+        s = s.replace(old, new)
+
+    s = s.rstrip()
 
     current_string = ""
     skip = False
@@ -296,6 +336,9 @@ def parse(s: str) -> list[Event]:
             current_string = ""
         elif re.match(r"\\F\d", current_string):
             events.append(FaceEvent(int(current_string[2])))
+            current_string = ""
+        elif re.match(r"\\M\d", current_string):
+            events.append(AnimationEvent(int(current_string[2])))
             current_string = ""
         elif re.match(r"\\S[-+p]", current_string):
             events.append(SoundEvent(current_string[2]))
@@ -362,9 +405,13 @@ def to_JSON(li: list[Event], **kwargs) -> str:
         out.append(d)
     return json.dumps(out, **kwargs)
 
+def to_tobyscript(li: list[Event]) -> str:
+    return "".join([e.tobyscript for e in li])
+
 def test(s: str):
     e = parse(s)
     print(e)
+    print(to_tobyscript(e))
 
 
 if __name__ == "__main__":

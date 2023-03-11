@@ -67,7 +67,7 @@ class ScreenView(arcade.View):
         self.recalc(1.5)
 
         self.lines: list[str] = ["* ENTRY NUMBER 5/",
-            "* I've done it./",
+            "s* I've done it./",
             "* Using the blueprints^1, I've&  extracted it from the&  human SOULs./",
             "* I believe this is what&  gives their SOULs the strength&  to persist after death./",
             "* The will to keep living..^1.&* The resolve to change fate./",
@@ -136,6 +136,7 @@ class ScreenView(arcade.View):
         self.speaker = "Default"
         self.emotion = 0
         self.face = 0
+        self.font_name = "Determination Mono"
         logger.info(f"Displaying string: {self.current_line}")
 
     def next_line(self):
@@ -194,6 +195,12 @@ class ScreenView(arcade.View):
                     self.face = event.data
                 elif isinstance(event, SpeakerEvent):
                     self.speaker = event.speaker
+                    if event.speaker == "Sans":
+                        self.font_name = "Sans Undertale"
+                    elif event.speaker == "Papryus":
+                        self.font_name = "Papryus Pixel Mono"
+                    else:
+                        self.font_name = "Determination Mono"
                 elif isinstance(event, SoundEvent):
                     if event.type == "phone":
                         self.phone.play()
