@@ -8,7 +8,7 @@ import pyglet
 from pymunk import Vec2d
 
 import tobyscript.data
-from tobyscript.lib.script import CloseEvent, EmotionEvent, FaceEvent, SkipEvent, SoundEvent, SpeakerEvent, WaitEvent, parse, Event, TextEvent, PauseEvent, ColorEvent, TextSizeEvent
+from tobyscript.lib.script import AnimationEvent, CloseEvent, EmotionEvent, FaceEvent, SkipEvent, SoundEvent, SpeakerEvent, WaitEvent, parse, Event, TextEvent, PauseEvent, ColorEvent, TextSizeEvent
 
 logger = logging.getLogger("tobyscript")
 
@@ -67,7 +67,7 @@ class ScreenView(arcade.View):
         self.recalc(1.5)
 
         self.lines: list[str] = ["* ENTRY NUMBER 5/",
-            "s* I've done it./",
+            "* I've done it./",
             "* Using the blueprints^1, I've&  extracted it from the&  human SOULs./",
             "* I believe this is what&  gives their SOULs the strength&  to persist after death./",
             "* The will to keep living..^1.&* The resolve to change fate./",
@@ -193,6 +193,8 @@ class ScreenView(arcade.View):
                     self.emotion = event.data
                 elif isinstance(event, FaceEvent):
                     self.face = event.data
+                elif isinstance(event, AnimationEvent):
+                    pass
                 elif isinstance(event, SpeakerEvent):
                     self.speaker = event.speaker
                     if event.speaker == "Sans":
