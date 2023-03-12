@@ -39,6 +39,16 @@ settings: Settings = {
     "fix_black": True
 }
 
+replacements = [
+    ("\\z4", "∞"),
+    ("&", "\n"),
+    ("\\*Z", "[Z]"),
+    ("\\*X", "[X]"),
+    ("\\*C", "[C]"),
+    ("\\*A", "[A]"),
+    ("\\*D", "[D]")
+]
+
 
 class Event:
     def __init__(self, data: str | int | None = None):
@@ -64,7 +74,10 @@ class TextEvent(Event):
 
     @property
     def tobyscript(self) -> str:
-        return self.data
+        s = self.data
+        for old, new in replacements:
+            s = s.replace(new, old)
+        return s
 
 class PauseEvent(Event):
     def __init__(self, data: int):
@@ -277,29 +290,25 @@ class CloseEvent(Event):
     def tobyscript(self) -> str:
         return "%%"
 
+
 def parse(s: str) -> list[Event]:
     """Take a TobyScript string and return an ordered list of Events."""
     events: list[Event] = []
     current_string = ""
 
-    replacements = [
-        ("\\>1", " "),
-        ("\\z4", "∞"),
-        ("&", "\n"),
-        ("\\C", ""),
-        ("\\*Z", "[Z]"),
-        ("\\*X", "[X]"),
-        ("\\*C", "[C]"),
-        ("\\*A", "[A]"),
-        ("\\*D", "[D]"),
+    one_way_replacements = [
         ("\\[C]", settings["char_name"]),
         ("\\[I]", settings["item"]),
         ("\\[G]", settings["g"]),
         ("\\[1]", settings["one"]),
-        ("\\[2]", settings["two"])
+        ("\\[2]", settings["two"]),
+        ("\\>1", " "),
+        ("\\C", "")
     ]
 
     for old, new in replacements:
+        s = s.replace(old, new)
+    for old, new in one_way_replacements:
         s = s.replace(old, new)
 
     s = s.rstrip()
@@ -406,10 +415,20 @@ def to_JSON(li: list[Event], **kwargs) -> str:
     return json.dumps(out, **kwargs)
 
 def to_tobyscript(li: list[Event]) -> str:
-    return "".join([e.tobyscript for e in li])
+    s = ""
+    for e in li:
+        if not isinstance(e, PauseEvent):
+            s += e.tobyscript
+        else:
+            a = s[-1]
+            s = s[:-1]
+            s += e.tobyscript
+            s += a
+    return s
 
 def test(s: str):
     e = parse(s)
+    print(s)
     print(e)
     print(to_tobyscript(e))
 
