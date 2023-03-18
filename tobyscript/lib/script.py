@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 import json
 import re
 from types import NoneType
@@ -8,7 +8,7 @@ RGB = tuple[int, int, int]
 RGBA = tuple[int, int, int, int]
 
 def flatten(x):
-    if isinstance(x, collections.Iterable):
+    if isinstance(x, collections.abc.Iterable):
         return [a for i in x for a in flatten(i)]
     else:
         return [x]
@@ -21,12 +21,14 @@ class Settings(TypedDict):
     * `item`: replaces `\\[I]`
     * `one`: replaces `\\[1]`
     * `two`: replaces `\\[2]`
+    * `fix_black`: replaces all black text with white`
     """
     char_name: str
     g: str
     item: str
     one: str
     two: str
+    fix_black: bool
 
 
 # SETTINGS
@@ -121,22 +123,22 @@ class ColorEvent(Event):
         self.data = cast(str, self.data)
 
     @property
-    def name(self) -> str:
+    def name(self) -> str | None:
         if self.data == "X":
             return "white" if settings["fix_black"] else "black"
         else:
             return self.NAME_MAP.get(self.data)
 
     @property
-    def rgba(self) -> RGBA:
+    def rgba(self) -> RGBA | None:
         if self.data == "X":
             return (0xFF, 0xFF, 0xFF, 0xFF) if settings["fix_black"] else (0x00, 0x00, 0x00, 0xFF)
         else:
             return self.COLOR_MAP.get(self.data)
 
     @property
-    def rgb(self) -> RGB:
-        return self.rgba[:2]
+    def rgb(self) -> RGB | None:
+        return self.rgba[0:3] if self.rgba else None
 
     @property
     def tobyscript(self) -> str:
@@ -171,8 +173,8 @@ class FaceEvent(Event):
         self.data = cast(int, self.data)
 
     @property
-    def character(self) -> str | None:
-        return self.FACE_MAP.get(self.data)
+    def character(self) -> str:
+        return self.FACE_MAP.get(self.data, "Unknown")
 
     @property
     def tobyscript(self) -> str:
@@ -198,7 +200,7 @@ class SoundEvent(Event):
             - `phone`: play phone sfx
         """
         super().__init__(data)
-        self.data = cast(str, self.data)
+        self.data = cast(Literal["-", "+", "p"], self.data)
 
     @property
     def type(self) -> str:
@@ -209,6 +211,8 @@ class SoundEvent(Event):
                 return "on"
             case "p":
                 return "phone"
+            case _:
+                raise ValueError
 
     @property
     def tobyscript(self) -> str:
@@ -254,7 +258,7 @@ class SpeakerEvent(Event):
 
     @property
     def speaker(self) -> str:
-        return self.SPEAKER_MAP.get(self.data)
+        return self.SPEAKER_MAP.get(self.data, "Unknown")
 
     @property
     def tobyscript(self) -> str:
