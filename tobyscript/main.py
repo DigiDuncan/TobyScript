@@ -14,10 +14,6 @@ SCREEN_HEIGHT = 720
 FPS_CAP = 240
 SCREEN_TITLE = "tobyscript"
 
-# Fix font lag
-pyglet.options["advanced_font_features"] = True
-arcade.pyglet.options["advanced_font_features"] = True
-
 for font in ["DTM-SANS.otf", "FNT-SANS.ttf", "FNT-PAPYRUS.ttf", "PIXELATED-WINGDINGS.ttf"]:
     with pkg_resources.path(tobyscript.data.fonts, font) as p:
         arcade.text.load_font(str(p))

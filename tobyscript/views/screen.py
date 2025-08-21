@@ -1,11 +1,11 @@
 import logging
 import importlib.resources as pkg_resources
-
+import string
 import arcade
 from arcade.experimental.crt_filter import CRTFilter
 import arcade.key
 import pyglet
-from pymunk import Vec2d
+from pyglet.math import Vec2
 
 import tobyscript.data
 from tobyscript.lib.script import AnimationEvent, CloseEvent, EmotionEvent, FaceEvent, SkipEvent, SoundEvent, SpeakerEvent, WaitEvent, parse, Event, TextEvent, PauseEvent, ColorEvent, TextSizeEvent
@@ -13,12 +13,13 @@ from tobyscript.lib.script import AnimationEvent, CloseEvent, EmotionEvent, Face
 logger = logging.getLogger("tobyscript")
 
 pyglet.options["debug_font"] = True
-pyglet.options["advanced_font_features"] = True
 
 
 class ScreenView(arcade.View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.color = arcade.color.GREEN
 
         window = arcade.get_window()
 
@@ -26,7 +27,7 @@ class ScreenView(arcade.View):
                             resolution_down_scale=1.0,
                             hard_scan=-8.0,
                             hard_pix=-3.0,
-                            display_warp = Vec2d(1.0 / 32.0, 1.0 / 18.0),
+                            display_warp = Vec2(1.0 / 32.0, 1.0 / 18.0),
                             mask_dark=0.5,
                             mask_light=1.5)
         self.filter_on = False
@@ -60,19 +61,15 @@ class ScreenView(arcade.View):
         self.text_box.center_y = self.window.height / 2
         self.document = pyglet.text.document.FormattedDocument("")
         self.text_label = pyglet.text.DocumentLabel(document = self.document,
-            x = self.text_box.left, y = self.text_box.top,
+            x = int(self.text_box.left), y = int(self.text_box.top),
             width = self.text_box.width, height = self.text_box.height,
-            anchor_x = "left", anchor_y = "baseline", multiline = "True")
+            anchor_x = "left", anchor_y = "baseline", multiline = True)
 
         self.recalc(1.5)
 
-        self.lines: list[str] = ["* ENTRY NUMBER 5/",
-            "* I've done it./",
-            "* Using the blueprints^1, I've&  extracted it from the&  human SOULs./",
-            "* I believe this is what&  gives their SOULs the strength&  to persist after death./",
-            "* The will to keep living..^1.&* The resolve to change fate./",
-            "* Let's call this power.../&\\Y* \"Determination.\"/%%"]
-        # self.lines: list[str] = ["* SOUL power can only be&  derived from what was&  once living./"]
+        self.lines: list[str] = []
+        with pkg_resources.open_text(tobyscript.data, "ma.txt") as f:
+            self.lines = f.readlines()
         self.current_line = ""
         self.text_events: list[Event] = []
 
@@ -127,7 +124,8 @@ class ScreenView(arcade.View):
             "margin_bottom": 4 * self.text_box.scale
         })
         if self.sound_on:
-            self.beep.play()
+            if c not in [" "]:
+                self.beep.play()
 
     def setup_text(self):
         self.text_events = parse(self.current_line)
@@ -196,6 +194,7 @@ class ScreenView(arcade.View):
                 elif isinstance(event, AnimationEvent):
                     pass
                 elif isinstance(event, SpeakerEvent):
+                    # Yes, these are hardcoded in Undertale, too.
                     self.speaker = event.speaker
                     if event.speaker == "Sans":
                         self.font_name = "Sans Undertale"
@@ -224,12 +223,11 @@ class ScreenView(arcade.View):
 
     def draw(self):
         if self.show_box:
-            self.text_box.draw(pixelated=True)
-        with self.window.ctx.pyglet_rendering():
-            self.text_label.draw()
-            if self.debug:
-                self.debug_label.draw()
-                self.emotion_label.draw()
+            arcade.draw_sprite(self.text_box, pixelated = True)
+        self.text_label.draw()
+        if self.debug:
+            self.debug_label.draw()
+            self.emotion_label.draw()
 
     def on_draw(self):
         if self.filter_on:
@@ -238,9 +236,9 @@ class ScreenView(arcade.View):
             self.draw()
 
             self.window.use()
-            self.clear()
+            self.clear(self.color)
             self.crt_filter.draw()
         else:
             self.window.use()
-            self.clear()
+            self.clear(self.color)
             self.draw()

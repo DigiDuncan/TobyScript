@@ -93,24 +93,24 @@ class PauseEvent(Event):
 
 class ColorEvent(Event):
     NAME_MAP = {"R": "red",
-             "G": "green",
-             "W": "white",
-             "Y": "yellow",
-             "B": "blue",
-             "O": "orange",
-             "L": "azure",
-             "P": "magenta",
-             "p": "pink"}
+                "G": "green",
+                "W": "white",
+                "Y": "yellow",
+                "B": "blue",
+                "O": "orange",
+                "L": "azure",
+                "P": "magenta",
+                "p": "pink"}
 
     COLOR_MAP = {"R": (0xFF, 0x00, 0x00, 0xFF),
-             "G": (0x00, 0xFF, 0x00, 0xFF),
-             "W": (0xFF, 0xFF, 0xFF, 0xFF),
-             "Y": (0xFF, 0xFF, 0x00, 0xFF),
-             "B": (0x00, 0x00, 0xFF, 0xFF),
-             "O": (0xFF, 0xA0, 0x40, 0xFF),
-             "L": (0x0E, 0xC0, 0xFD, 0xFF),
-             "P": (0xFF, 0x00, 0xFF, 0xFF),
-             "p": (0xFF, 0xBB, 0xD4, 0xFF)}
+                 "G": (0x00, 0xFF, 0x00, 0xFF),
+                 "W": (0xFF, 0xFF, 0xFF, 0xFF),
+                 "Y": (0xFF, 0xFF, 0x00, 0xFF),
+                 "B": (0x00, 0x00, 0xFF, 0xFF),
+                 "O": (0xFF, 0xA0, 0x40, 0xFF),
+                 "L": (0x0E, 0xC0, 0xFD, 0xFF),
+                 "P": (0xFF, 0x00, 0xFF, 0xFF),
+                 "p": (0xFF, 0xBB, 0xD4, 0xFF)}
 
     def __init__(self, data: str):
         """Changes the color of upcoming text.
@@ -216,7 +216,7 @@ class SoundEvent(Event):
 
     @property
     def tobyscript(self) -> str:
-        return f"\\{self.data}"
+        return f"\\S{self.data}"
 
 class TextSizeEvent(Event):
     def __init__(self, data: str):
@@ -262,7 +262,7 @@ class SpeakerEvent(Event):
 
     @property
     def tobyscript(self) -> str:
-        return f"\\S{self.data}"
+        return f"\\T{self.data}"
 
 class WaitEvent(Event):
     def __init__(self):
